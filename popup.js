@@ -1,53 +1,71 @@
-// Coded by Raman Choudhary
+var pixels, waitTime, timeout, sliderVal;
+var startScroll = document.getElementById('startScroll');
+var stopScroll = document.getElementById('stopScroll');
+var slider = document.getElementById("myRange");
 
-let isRunning = false
-let scrollSpeed = 1;
-let TASK = null;
+startScroll.style.backgroundColor = '#00FF7F';
+stopScroll.style.backgroundColor = '#FF007F';
 
-document.addEventListener('DOMContentLoaded', function() {
-  renderSpeed(scrollSpeed)
-  const $startButton = document.getElementById("startBtn")
-  const $speedRange = document.getElementById("speedRange")
-  $speedRange.addEventListener("input", (event) => {
-    scrollSpeed = event.target.value
-    renderSpeed(scrollSpeed)
-  })
+// Scroll object
+startScroll.onclick = setSlider;
+slider.onchange = setSlider;
 
-  $startButton.addEventListener("click", () => {
-    if(isRunning) {
-      $startButton.innerHTML = "START"
-      stopScrolling()
+stopScroll.onclick = function() {
+    pixels = 0;
+};
+
+document.onreadystatechange = function() {
+    console.log("local storage");
+    var saved_timeout;
+    var saved_pixel;
+    var saved_slider;
+
+    saved_timeout = localStorage.getItem("timeout");
+    saved_pixel = localStorage.getItem("pixel");
+    saved_slider = localStorage.getItem("slider");
+
+    if (saved_timeout) timeout = saved_timeout;
+    if (saved_pixel) pixels = saved_pixel;
+    if (saved_slider) sliderVal = saved_slider;
+};
+
+function setSlider() {
+    clearTimeout(timeout);
+    if (slider.value < 300)
+        waitTime = 300 - slider.value;
+    else
+        waitTime = 1;
+
+    pixels = 1;
+    if (slider.value >= 300) pixels = 2;
+    else if (slider.value >= 350) pixels = 3;
+    else if (slider.value >= 400) pixels = 4;
+    else if (slider.value >= 450) pixels = 5;
+    else if (slider.value >= 500) pixels = 6;
+
+    timeout = setInterval(scroll, waitTime);
+
+    localStorage.setItem("pixels", JSON.stringify(pixels));
+    localStorage.setItem("timeout", JSON.stringify(timeout));
+    localStorage.setItem("slider", JSON.stringify(slider.value));
+}
+
+function scroll() {
+    chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
+        chrome.scripting.executeScript({
+            target: { tabId: tabs[0].id },
+            func: returnScript,
+            args: [pixels]
+        });
+    });
+}
+
+function returnScript(pixels) {
+    if (document.title.includes('Google Sheets')) {
+        // Custom behavior for Google Sheets
+    } else if (document.title.includes('Google Doc')) {
+        // Custom behavior for Google Docs
     } else {
-      $startButton.innerHTML = "STOP"
-      keepScrolling()
+        window.scrollBy(0, pixels);
     }
-  })
-})
-
-const renderSpeed = (speed) => {
-  const $speedText =  document.getElementById("speedText")
-  $speedText.innerHTML = `${speed}px`
 }
-
-const keepScrolling = () => {
-  TASK = setInterval(() => {
-    chrome.tabs.getSelected(null, (tab) => {
-      chrome.tabs.executeScript(tab.id, {
-        code: generateCode()
-      });
-    })
-  }, 10)
-}
-
-const stopScrolling = () => {
-  clearInterval(TASK)
-}
-
-const generateCode = () => (
-  `
-  window.scrollTo({
-    top: window.scrollY + ${scrollSpeed},
-    behavior: 'smooth'
-  });
-  `
-)

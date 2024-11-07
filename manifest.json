@@ -1,29 +1,17 @@
 {
-  "manifest_version": 3,
-  "name": "Auto Scroll",
-  "version": "1.0",
-  "description": "Automatically scrolls web pages.",
-  "permissions": ["activeTab"],
-  "host_permissions": [
-  "https://*/*",
-  "http://*/*"
-],
-  
-  
+  "name": "AutoScroll",
+  "version": "0.0.2",
+  "description": "Autoscrolling for the lazy!",
+  "permissions": ["activeTab", "scripting", "declarativeContent", "storage"],
   "action": {
     "default_popup": "popup.html",
     "default_icon": {
-      "16": "icon16.png",
-      "48": "icon48.png",
-      "128": "icon128.png"
+      "128": "images/scroll.png"
     }
   },
-  "background": {
-    "service_worker": "background.js"
-  },
   "icons": {
-    "16": "icon16.png",
-    "48": "icon48.png",
-    "128": "icon128.png"
-  }
+    "128": "images/scroll.png",
+    "48": "images/scroll copy.png"
+  },
+  "manifest_version": 3
 }
